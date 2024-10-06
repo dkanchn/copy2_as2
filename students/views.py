@@ -1,16 +1,13 @@
-from django.shortcuts import render
-
-# Create your views here.
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from .models import Course, QuotaRequest
 from .forms import CourseForm
+from django.contrib import messages
 
 @login_required
 def dashboard(request):
     courses = Course.objects.all()
-    quota_requests = QuotaRequest.objects.filter(user=request.user)
+    quota_requests = QuotaRequest.objects.filter(student=request.user)  # แก้เป็น student เพื่อให้สอดคล้อง
     context = {
         'courses': courses,
         'quota_requests': quota_requests,
@@ -19,33 +16,29 @@ def dashboard(request):
 
 @login_required
 def request_quota(request, course_id):
-    course = Course.objects.get(id=course_id)
-    quota_request = QuotaRequest.objects.create(student=request.user, course=course)
+    course = get_object_or_404(Course, id=course_id)
+    user = request.user
+    
+    # ตรวจสอบว่านักเรียนได้ลงทะเบียนในหลักสูตรนี้แล้วหรือไม่
+    existing_request = QuotaRequest.objects.filter(course=course, student=user).first()
+    
+    if not existing_request:
+        # สร้างคำขอควอทาสำหรับหลักสูตร
+        QuotaRequest.objects.create(course=course, student=user, status="Pending")
+    
+    # เปลี่ยนเส้นทางไปยังหน้าแดชบอร์ด
     return redirect('student_dashboard')
 
 
 @login_required
-def student_dashboard(request):
-    # แสดงวิชาที่เปิดให้ขอโควต้า
-    return render(request, 'students/dashboard.html')
-
-from django.shortcuts import render, redirect
-from .models import Course, QuotaRequest
-from django.contrib.auth.decorators import login_required
-
-@login_required
-def dashboard(request):
-    courses = Course.objects.all()
-    #for course in courses:
-    #    course.available_seats = course.seats - QuotaRequest.objects.filter(course=course, status='approved').count()
-    return render(request, 'students/dashboard.html', {'courses': courses})
-
-@login_required
-def request_quota(request, course_id):
-    if request.method == 'POST':
-        course = Course.objects.get(id=course_id)
-        QuotaRequest.objects.create(student=request.user, course=course)
-        return redirect('student_dashboard')
+def cancel_quota(request, quota_id):
+    quota_request = get_object_or_404(QuotaRequest, id=quota_id, student=request.user)
+    # ปรับปรุงจำนวนที่นั่งว่างของวิชาที่ถูกยกเลิก
+    course = quota_request.course
+    course.available_seats += 1
+    course.save()
+    # ลบคำขอควอทา
+    quota_request.delete()
     return redirect('student_dashboard')
 
 @login_required
@@ -60,44 +53,25 @@ def add_course(request):
     return render(request, 'students/add_course.html', {'form': form})
 
 @login_required
-def request_quota(request, course_id):
-    course = get_object_or_404(Course, id=course_id)
-    user = request.user
-    
-    # Check if the student has already enrolled in the course
-    existing_request = QuotaRequest.objects.filter(course=course, student=user).first()
-    
-    if not existing_request:
-        # Create a new quota request for the course
-        QuotaRequest.objects.create(course=course, student=user, status="Pending")
-    
-    # Redirect to the dashboard page
-    return redirect('student_dashboard')
-
-@login_required
-def cancel_quota(request, quota_id):
-    quota_request = get_object_or_404(QuotaRequest, id=quota_id, student=request.user)
-    # ปรับปรุงจำนวนที่นั่งว่างของวิชาที่ถูกยกเลิก
-    course = quota_request.course
-    course.available_seats += 1
-    course.save()
-    # ลบขอโควต้า
-    quota_request.delete()
-    return redirect('student_dashboard')  # กลับไปที่แดชบอร์ด
-
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-
-@login_required
 def enroll_course(request, course_id):
     if request.method == 'POST':
-        course = Course.objects.get(id=course_id)
-        if course.available_seats > 0:
-            QuotaRequest.objects.create(user=request.user, course=course)
+        course = get_object_or_404(Course, id=course_id)
+        # ตรวจสอบว่าผู้ใช้ได้ลงทะเบียนในหลักสูตรนี้แล้วหรือไม่
+        existing_request = QuotaRequest.objects.filter(course=course, student=request.user).first()
+
+        if existing_request:
+            # ถ้าผู้ใช้ได้ลงทะเบียนแล้ว ให้แสดงข้อความหรือทำอย่างอื่นที่คุณต้องการ
+            messages.warning(request, 'You have already enrolled in this course.')
+            return redirect('student_dashboard')  # หรือสามารถแสดงข้อความแจ้งเตือนได้
+        else:
+            # ถ้ายังไม่ลงทะเบียนให้สร้างคำขอควอทาใหม่
+            QuotaRequest.objects.create(student=request.user, course=course, status="Complete")
+            # ลดจำนวนที่นั่งว่าง
             course.available_seats -= 1
             course.save()
-            return redirect('dashboard')  # Redirect to the dashboard after enrolling
-    return redirect('dashboard')  # Redirect to the dashboard if not a POST request
+            return redirect('student_dashboard')  # เปลี่ยนเส้นทางไปยังแดชบอร์ดหลังจากลงทะเบียน
+
+    return redirect('student_dashboard')  # เปลี่ยนเส้นทางไปยังแดชบอร์ดถ้าไม่ใช่คำขอ POST
 
 @login_required
 def cancel_enrollment(request, request_id):
@@ -105,4 +79,4 @@ def cancel_enrollment(request, request_id):
     quota_request.status = 'cancelled'
     quota_request.save()
 
-    return redirect('dashboard')
+    return redirect('student_dashboard')

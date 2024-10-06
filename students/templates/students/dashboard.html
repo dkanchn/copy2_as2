@@ -45,11 +45,29 @@
             color: white;
             cursor: pointer;
         }
+        .alert {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 5px;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeeba;
+        }
     </style>
 </head>
 <body>
     <h1>Dashboard</h1>
-    
+
+    <!-- แสดงข้อความแจ้งเตือน -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-warning">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
     <h2>Available Courses</h2>
     <table>
         <thead>
@@ -106,14 +124,14 @@
             <thead>
                 <tr>
                     <th>Course</th>
-                    <th>Status</th>
                     <th>Action</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
-                {% for request in quotarequest %}
+                {% for request in quota_requests %}
                 <tr>
-                    <td>{{ request.course.course_name }}</td>
+                    <td>{{ request.course }}</td>
                     <td>{{ request.status }}</td>
                     <td>
                         {% if request.status == 'Pending' %}

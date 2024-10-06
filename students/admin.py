@@ -14,6 +14,10 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(QuotaRequest)
 class QuotaRequestAdmin(admin.ModelAdmin):
-    list_display = ('student', 'course', 'status')
-    list_filter = ('status',)
-    search_fields = ('student__username', 'course__code')
+    list_display = ('student', 'course', 'status', 'created_at')
+    actions = ['approve_requests']
+
+    def approve_requests(self, request, queryset):
+        queryset.update(status='Approved')
+
+    approve_requests.short_description = "Approve selected quota requests"
