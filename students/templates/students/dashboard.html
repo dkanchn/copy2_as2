@@ -1,0 +1,48 @@
+<h1>Dashboard</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Course Code</th>
+            <th>Course Name</th>
+            <th>Semester</th>
+            <th>Year</th>
+            <th>Available Seats</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for course in courses %}
+        <tr>
+            <td>{{ course.code }}</td>
+            <td>{{ course.name }}</td>
+            <td>{{ course.semester }}</td>
+            <td>{{ course.year }}</td>
+            <td>{{ course.seats }}</td>
+            <td>
+                <form method="post" action="{% url 'request_quota' course.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Request Quota</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Your Quota Requests</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Course</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in quota_requests %}
+        <tr>
+            <td>{{ request.course.code }} - {{ request.course.name }}</td>
+            <td>{{ request.status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
