@@ -18,7 +18,8 @@ def login_view(request):
             else:
                 return redirect('student_dashboard')  # นำทางไปยังหน้า dashboard สำหรับนักเรียน
         else:
-            messages.error(request, "Username หรือ Password ไม่ถูกต้อง")
+            #messages.error(request, "Username หรือ Password ไม่ถูกต้อง")
+            render(request, 'users/login.html')
     
     return render(request, 'users/login.html')
 
@@ -26,3 +27,4 @@ from django.contrib.auth.views import LoginView
 
 class CustomLoginView(LoginView):
     template_name = 'login.html'  # ใช้ template สำหรับหน้า login
+

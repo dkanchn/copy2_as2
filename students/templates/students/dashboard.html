@@ -1,48 +1,121 @@
-<h1>Dashboard</h1>
-<table>
-    <thead>
-        <tr>
-            <th>Course Code</th>
-            <th>Course Name</th>
-            <th>Semester</th>
-            <th>Year</th>
-            <th>Available Seats</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for course in courses %}
-        <tr>
-            <td>{{ course.code }}</td>
-            <td>{{ course.name }}</td>
-            <td>{{ course.semester }}</td>
-            <td>{{ course.year }}</td>
-            <td>{{ course.seats }}</td>
-            <td>
-                <form method="post" action="{% url 'request_quota' course.id %}">
-                    {% csrf_token %}
-                    <button type="submit">Request Quota</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        th {
+            background-color: #4a90e2;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .status-open {
+            color: green;
+        }
+        .status-closed {
+            color: red;
+        }
+        .action-button {
+            padding: 5px 10px;
+            margin: 5px;
+            border: none;
+            background-color: #4a90e2;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    
+    <h2>Available Courses</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Course Code</th>
+                <th>Course Name</th>
+                <th>Semester</th>
+                <th>Academic Year</th>
+                <th>Total Seats</th>
+                <th>Available Seats</th>
+                <th>Status (Open/Closed for Quota Requests)</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in courses %}
+                <tr>
+                    <td>{{ course.code }}</td>
+                    <td>{{ course.name }}</td>
+                    <td>{{ course.semester }}</td>
+                    <td>{{ course.year }}</td>
+                    <td>{{ course.seats }}</td>
+                    <td>{{ course.available_seats }}</td>
+                    <td class="{% if course.available_seats > 0 %}status-open{% else %}status-closed{% endif %}">
+                        {% if course.available_seats > 0 %}
+                            Open
+                        {% else %}
+                            Closed
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if course.available_seats > 0 %}
+                            <form action="{% url 'request_quota' course.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="action-button">Request Quota</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-<h2>Your Quota Requests</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Course</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for request in quota_requests %}
-        <tr>
-            <td>{{ request.course.code }} - {{ request.course.name }}</td>
-            <td>{{ request.status }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <h2>Quota Requests</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in quota_requests %}
+                <tr>
+                    <td>{{ request.course.name }}</td>
+                    <td>{{ request.status }}</td>
+                    <td>
+                        <form action="{% url 'cancel_quota' request.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="action-button">Cancel</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
