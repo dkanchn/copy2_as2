@@ -47,6 +47,19 @@
         .status-closed {
             color: red;
         }
+        .action-button {
+            padding: 5px 10px;
+            margin: 5px;
+            border: none;
+            background-color: #4a90e2;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .action-button:hover {
+            background-color: #357ABD;
+        }
         .alert {
             padding: 10px;
             margin-bottom: 20px;
@@ -86,6 +99,7 @@
                 <th>Total Seats</th>
                 <th>Available Seats</th>
                 <th>Status (Open/Closed for Quota Requests)</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -104,6 +118,22 @@
                             Closed
                         {% endif %}
                     </td>
+                    <td>
+                        {% if course.available_seats > 0 %}
+                            {% if course.quota_request and course.quota_request.status == 'complete' %}
+                                <span>Complete</span>
+                                <form action="{% url 'cancel_quota' course.quota_request.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-button">Cancel</button>
+                                </form>
+                            {% else %}
+                                <form action="{% url 'enroll_course' course.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-button">Enroll</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -115,6 +145,7 @@
             <tr>
                 <th>Course</th>
                 <th>Status</th>
+                <!--<th>Action</th>-->
             </tr>
         </thead>
         <tbody>
@@ -128,10 +159,18 @@
                         <button disabled class="status-closed">Pending</button>
                     {% endif %}
                 </td>
+                <!--<td>
+                    {% if request.status == 'Pending' %}
+                        <form action="{% url 'cancel_quota' request.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="action-button">Cancel</button>
+                        </form>
+                    {% endif %}
+                </td>-->
             </tr>
             {% empty %}
             <tr>
-                <td colspan="2" class="no-requests">No Quota Requests</td>
+                <td colspan="3" class="no-requests">No Quota Requests</td>
             </tr>
             {% endfor %}
         </tbody>
