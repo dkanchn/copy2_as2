@@ -82,10 +82,18 @@
                     </td>
                     <td>
                         {% if course.available_seats > 0 %}
-                            <form action="{% url 'request_quota' course.id %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="action-button">Quota Enroll</button>
-                            </form>
+                            {% if course.quota_request and course.quota_request.status == 'complete' %}
+                                <span>Complete</span>
+                                <form action="{% url 'cancel_quota' course.quota_request.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-button">Cancel</button>
+                                </form>
+                            {% else %}
+                                <form action="{% url 'enroll_course' course.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-button">Enroll</button>
+                                </form>
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>
@@ -94,28 +102,33 @@
     </table>
 
     <h2>Quota Requests</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Course</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for request in quota_requests %}
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ request.course.name }}</td>
+                    <th>Course</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in quotarequest %}
+                <tr>
+                    <td>{{ request.course.course_name }}</td>
                     <td>{{ request.status }}</td>
                     <td>
-                        <form action="{% url 'cancel_quota' request.id %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="action-button">Cancel</button>
-                        </form>
+                        {% if request.status == 'Pending' %}
+                            <button disabled>Pending</button>
+                        {% else %}
+                            <button disabled>Approved</button>
+                        {% endif %}
                     </td>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                {% empty %}
+                <tr>
+                    <td colspan="3">No Quota Requests</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 </body>
 </html>

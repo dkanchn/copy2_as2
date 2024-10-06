@@ -28,3 +28,41 @@ from django.contrib.auth.views import LoginView
 class CustomLoginView(LoginView):
     template_name = 'login.html'  # ใช้ template สำหรับหน้า login
 
+# admin/views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from students.models import QuotaRequest
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required
+def approve_quota_requests(request):
+    quota_requests = QuotaRequest.objects.filter(status="Pending")
+    
+    if request.method == "POST":
+        quota_id = request.POST.get("quota_id")
+        quota_request = get_object_or_404(QuotaRequest, id=quota_id)
+        quota_request.status = "Approved"
+        quota_request.save()
+        return redirect('approve_quota_requests')
+    
+    context = {
+        'quota_requests': quota_requests,
+    }
+    return render(request, 'admin/approve_quota_requests.html', context)
+
+@login_required
+def manage_quota_requests(request):
+    quota_requests = QuotaRequest.objects.filter(status='pending')
+
+    if request.method == 'POST':
+        quota_request_id = request.POST.get('quota_request_id')
+        action = request.POST.get('action')
+        quota_request = QuotaRequest.objects.get(id=quota_request_id)
+
+        if action == 'approve':
+            quota_request.status = 'approved'
+        elif action == 'reject':
+            quota_request.status = 'rejected'
+
+        quota_request.save()
+
+    return render(request, 'admin/manage_quota_requests.html', {'quota_requests': quota_requests})

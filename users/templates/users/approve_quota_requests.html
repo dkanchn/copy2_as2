@@ -1,0 +1,30 @@
+<!-- admin/approve_quota_requests.html -->
+<h3>Pending Quota Requests</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Student</th>
+            <th>Course</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in quota_requests %}
+        <tr>
+            <td>{{ request.student.username }}</td>
+            <td>{{ request.course.course_name }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="quota_id" value="{{ request.id }}">
+                    <button type="submit">Approve</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No Pending Requests</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

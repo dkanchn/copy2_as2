@@ -17,4 +17,3 @@ class QuotaRequestAdmin(admin.ModelAdmin):
     list_display = ('student', 'course', 'status')
     list_filter = ('status',)
     search_fields = ('student__username', 'course__code')
-
