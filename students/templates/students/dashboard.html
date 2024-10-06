@@ -84,7 +84,7 @@
                         {% if course.available_seats > 0 %}
                             <form action="{% url 'request_quota' course.id %}" method="post">
                                 {% csrf_token %}
-                                <button type="submit" class="action-button">Request Quota</button>
+                                <button type="submit" class="action-button">Quota Enroll</button>
                             </form>
                         {% endif %}
                     </td>

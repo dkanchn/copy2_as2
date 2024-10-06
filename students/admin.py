@@ -6,7 +6,7 @@ from .models import Course, QuotaRequest
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('code', 'name', 'semester', 'year', 'seats', 'available')
+    list_display = ('code', 'name', 'semester', 'year', 'seats', 'available_seats', 'available')
 
     def available(self, obj):
         return "Available" if obj.is_open else "Closed"

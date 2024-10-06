@@ -10,9 +10,10 @@ class Course(models.Model):
     name = models.CharField(max_length=100)  # ชื่อวิชา
     semester = models.CharField(max_length=10)  # ภาคการศึกษา (เช่น 1/2564)
     year = models.IntegerField()  # ปีการศึกษา
-    seats = models.IntegerField()  # จำนวนที่นั่ง
-    #available_seats = models.IntegerField()
-    available_seats = models.IntegerField(default=0)
+    #seats = models.IntegerField()  # จำนวนที่นั่ง
+    seats = models.IntegerField(default=0)
+    available_seats = models.IntegerField()
+    #available_seats = models.IntegerField(default=0)
     available = models.BooleanField(default=True)  # เพิ่มฟิลด์นี้
 
     def __str__(self):

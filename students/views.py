@@ -66,8 +66,11 @@ def request_quota(request, course_id):
         # ปรับปรุงจำนวนที่นั่งว่าง
         course.available_seats -= 1
         course.save()
-        return redirect('student_dashboard')  # กลับไปที่แดชบอร์ด
-    return redirect('student_dashboard')  # หากไม่สามารถขอโควต้าได้ ให้กลับไปที่แดชบอร์ด
+        #return redirect('student_dashboard')  # กลับไปที่แดชบอร์ด
+    #return redirect('student_dashboard')  # หากไม่สามารถขอโควต้าได้ ให้กลับไปที่แดชบอร์ด
+        QuotaRequest.objects.create(student=request.user, course=course, status='pending')
+
+    return redirect('student_dashboard')
 
 @login_required
 def cancel_quota(request, quota_id):
