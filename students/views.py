@@ -32,14 +32,20 @@ def request_quota(request, course_id):
 
 @login_required
 def cancel_quota(request, quota_id):
-    quota_request = get_object_or_404(QuotaRequest, id=quota_id, student=request.user)
-    # ปรับปรุงจำนวนที่นั่งว่างของวิชาที่ถูกยกเลิก
-    course = quota_request.course
-    course.available_seats += 1
-    course.save()
-    # ลบคำขอควอทา
-    quota_request.delete()
-    return redirect('student_dashboard')
+    quota_request = get_object_or_404(QuotaRequest, id=request)
+
+    # ตรวจสอบว่าคำร้องขอโควต้าเป็น Pending หรือไม่
+    if quota_request.status == 'Pending':
+        course = quota_request.course
+        # ยกเลิกคำร้องขอ
+        quota_request.delete()
+        # คืนที่นั่ง
+        course.refund_seat()
+        messages.success(request, "Quota request has been cancelled and seat refunded.")
+    else:
+        messages.error(request, "Cannot cancel approved quota request.")
+
+    return redirect('dashboard')  # เปลี่ยนเป็น URL ของหน้า Dashboard
 
 @login_required
 def add_course(request):

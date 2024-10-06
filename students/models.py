@@ -19,6 +19,11 @@ class Course(models.Model):
 
     def __str__(self):
         return f"{self.code} - {self.name}"
+    
+    def refund_seat(self):
+        """คืนที่นั่งเมื่อมีการยกเลิกคำร้องขอโควต้า"""
+        self.available_seats += 1
+        self.save()
 
 # โมเดลสำหรับการขอโควต้า
 #class QuotaRequest(models.Model):
