@@ -47,8 +47,9 @@ class ApproveQuotaRequestsViewTest(TestCase):
         self.staff_user = User.objects.create_user(username='staff', password='password', is_staff=True)
         self.client.login(username='staff', password='password')
         # สร้าง Course ก่อน
-        self.course = Course.objects.create(name="Course Name")
-        
+        #self.course = Course.objects.create(name="Course Name", year=2024)
+        self.course = Course.objects.create(name="Course Name", year=2024, available_seats=10)
+
         # สร้าง QuotaRequest ที่มีสถานะเป็น "Pending"
         self.quota_request = QuotaRequest.objects.create(student=self.staff_user, course_id=1, status="Pending")
 
@@ -67,6 +68,9 @@ class ApproveQuotaRequestsViewTest(TestCase):
 
 class ManageQuotaRequestsViewTest(TestCase):
     def setUp(self):
+        # สร้าง Course ก่อน
+        self.course = Course.objects.create(name="Sample Course", year=2024, available_seats=10)
+        
         # สร้างผู้ใช้ผู้ดูแลระบบและ QuotaRequest สำหรับการทดสอบ
         self.staff_user = User.objects.create_user(username='staff', password='password', is_staff=True)
         self.client.login(username='staff', password='password')
