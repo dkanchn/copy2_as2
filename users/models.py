@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)  # เชื่อมโยงกับ User
     student_id = models.CharField(max_length=10)  # รหัสนักเรียน
-    # เพิ่มฟิลด์อื่น ๆ ที่คุณต้องการได้ที่นี่
 
     def __str__(self):
         return self.user.username  # แสดงชื่อผู้ใช้
