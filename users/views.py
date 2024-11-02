@@ -47,7 +47,7 @@ def approve_quota_requests(request):
     context = {
         'quota_requests': quota_requests,
     }
-    return render(request, 'admin/approve_quota_requests.html', context)
+    return render(request, 'admin/manage_quota_requests.html', context)
 
 @login_required
 def manage_quota_requests(request):

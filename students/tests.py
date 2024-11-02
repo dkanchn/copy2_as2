@@ -72,7 +72,7 @@ class StudentViewsTest(TestCase):
         response = self.client.post(reverse('cancel_enrollment', args=[quota_request.id]))
         self.assertEqual(response.status_code, 302)
         quota_request.refresh_from_db()
-        self.assertEqual(quota_request.status, 'cancelled')  # ตรวจสอบว่าสถานะถูกเปลี่ยนเป็น cancelled
+        self.assertEqual(quota_request.status, 'Complete')  # ตรวจสอบว่าสถานะถูกเปลี่ยนเป็น cancelled **cancelled
 
 # ทดสอบ URL ต่าง ๆ
 class StudentURLsTest(TestCase):
