@@ -32,7 +32,7 @@ def request_quota(request, course_id):
 
 @login_required
 def cancel_quota(request, quota_id):
-    quota_request = get_object_or_404(QuotaRequest, id=request)
+    quota_request = get_object_or_404(QuotaRequest, id=quota_id)
 
     # ตรวจสอบว่าคำร้องขอโควต้าเป็น Pending หรือไม่
     if quota_request.status == 'Pending':
@@ -45,7 +45,7 @@ def cancel_quota(request, quota_id):
     else:
         messages.error(request, "Cannot cancel approved quota request.")
 
-    return redirect('dashboard')  # เปลี่ยนเป็น URL ของหน้า Dashboard
+    return redirect('student_dashboard')  # เปลี่ยนเป็น URL ของหน้า Dashboard
 
 @login_required
 def add_course(request):
@@ -86,3 +86,16 @@ def cancel_enrollment(request, request_id):
     quota_request.save()
 
     return redirect('student_dashboard')
+'''@login_required
+def cancel_enrollment(request, request_id):
+    quota_request = get_object_or_404(QuotaRequest, id=request_id, student=request.user)
+    
+    # ตรวจสอบเงื่อนไขในการยกเลิก
+    if quota_request.status in ['Complete', 'Pending']:  # เพิ่มเงื่อนไขให้รองรับ 'Complete'
+        quota_request.status = 'cancelled'
+        quota_request.save()
+        messages.success(request, "Enrollment has been cancelled.")
+    else:
+        messages.error(request, "Cannot cancel this enrollment.")
+
+    return redirect('student_dashboard')'''
