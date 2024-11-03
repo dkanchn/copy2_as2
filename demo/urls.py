@@ -18,11 +18,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
+from django.contrib.auth.views import LogoutView
+from . import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('students/', include('students.urls')),  # เชื่อมโยง URLs ของแอป students
     path('users/', include('users.urls')),  # สมมติว่ามีแอป users ด้วย
     path('', RedirectView.as_view(url='/users/login/', permanent=False)),
+    path('login/', views.custom_login_view, name='login'),
+    #path('login/', LoginView.as_view(template_name='users/login.html'), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
 ]
-

@@ -79,6 +79,12 @@
     </style>
 </head>
 <body>
+    <!-- ปุ่ม Logout -->
+    <form action="{% url 'logout' %}" method="post" style="text-align: right; margin-bottom: 20px;">
+        {% csrf_token %}
+        <button type="submit" class="action-button">Logout</button>
+    </form>
+
     <h1>Dashboard</h1>
 
     <!-- แสดงข้อความแจ้งเตือน -->
@@ -144,8 +150,28 @@
         <thead>
             <tr>
                 <th>Course</th>
+                <th>Action</th> <!-- เพิ่ม Action column -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in quota_requests %}
+                <tr>
+                    <td>{{ request.course.code }} - {{ request.course.name }}</td>
+                    <td>{{ request.get_status_display }}</td>
+                    <td>
+                        {% if request.status == 'Pending' %}
+                            <!-- เพิ่มฟอร์มหรือปุ่มยกเลิก -->
+                            <form action="{% url 'cancel_quota_request' request.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Cancel</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
                 <th>Status</th>
-                <!--<th>Action</th>-->
             </tr>
         </thead>
         <tbody>
@@ -159,18 +185,10 @@
                         <button disabled class="status-closed">Pending</button>
                     {% endif %}
                 </td>
-                <!--<td>
-                    {% if request.status == 'Pending' %}
-                        <form action="{% url 'cancel_quota' request.id %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="action-button">Cancel</button>
-                        </form>
-                    {% endif %}
-                </td>-->
             </tr>
             {% empty %}
             <tr>
-                <td colspan="3" class="no-requests">No Quota Requests</td>
+                <td colspan="2" class="no-requests">No Quota Requests</td>
             </tr>
             {% endfor %}
         </tbody>

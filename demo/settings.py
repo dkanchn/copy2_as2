@@ -126,4 +126,6 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ตั้งค่าให้ redirect ไปยังหน้า login หลังจาก logout
-#LOGOUT_REDIRECT_URL = 'login'
+LOGOUT_REDIRECT_URL = '/login/'
+# settings.py
+LOGIN_REDIRECT_URL = '/students/dashboard/'  # ระบุเส้นทางของหน้า dashboard หรือหน้าอื่น ๆ ที่ต้องการ

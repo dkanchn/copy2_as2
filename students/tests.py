@@ -16,7 +16,7 @@ class StudentViewsTest(TestCase):
             code="CS101",
             name="Test Course",
             semester="1/2564",
-            year=2023,  # ระบุค่า year ที่จำเป็น
+            year=2023,
             seats=30,
             available_seats=10,
             available=True
@@ -31,18 +31,19 @@ class StudentViewsTest(TestCase):
     def test_request_quota_view(self):
         # ทดสอบว่า request_quota view ทำงานถูกต้อง
         response = self.client.post(reverse('request_quota', args=[self.course.id]))
-        self.assertEqual(response.status_code, 302)  # Redirect หลังจากทำงานสำเร็จ
+        self.assertEqual(response.status_code, 302)
         self.assertTrue(QuotaRequest.objects.filter(course=self.course, student=self.user).exists())
 
-    def test_cancel_quota_view(self):
+    def test_cancel_request_view(self):
         # สร้างคำร้องขอโควต้าเพื่อลองยกเลิก
         quota_request = QuotaRequest.objects.create(course=self.course, student=self.user, status='Pending')
         
-        response = self.client.post(reverse('cancel_enrollment', args=[quota_request.id]))
+        response = self.client.post(reverse('cancel_request', args=[quota_request.id]))
         self.assertEqual(response.status_code, 302)
-        self.assertFalse(QuotaRequest.objects.filter(id=quota_request.id).exists())  # ตรวจสอบว่า request ถูกลบไปแล้ว
+        # ตรวจสอบว่าคำขอถูกลบและคืนที่นั่ง
+        self.assertFalse(QuotaRequest.objects.filter(id=quota_request.id).exists())
         self.course.refresh_from_db()
-        self.assertEqual(self.course.available_seats, 11)  # ตรวจสอบว่าคืนที่นั่งแล้ว
+        self.assertEqual(self.course.available_seats, 11)
 
     def test_add_course_view(self):
         # ทดสอบการเพิ่มหลักสูตร
@@ -65,15 +66,6 @@ class StudentViewsTest(TestCase):
         self.course.refresh_from_db()
         self.assertEqual(self.course.available_seats, 9)  # ตรวจสอบว่าลดจำนวนที่นั่งว่างลง
 
-    def test_cancel_enrollment_view(self):
-        # สร้างคำร้องขอโควต้าเพื่อลองยกเลิก
-        quota_request = QuotaRequest.objects.create(course=self.course, student=self.user, status="Complete")
-        
-        response = self.client.post(reverse('cancel_enrollment', args=[quota_request.id]))
-        self.assertEqual(response.status_code, 302)
-        quota_request.refresh_from_db()
-        self.assertEqual(quota_request.status, 'Complete')  # ตรวจสอบว่าสถานะถูกเปลี่ยนเป็น cancelled **cancelled
-
 # ทดสอบ URL ต่าง ๆ
 class StudentURLsTest(TestCase):
     def setUp(self):
@@ -86,7 +78,7 @@ class StudentURLsTest(TestCase):
             code="CS101",
             name="Test Course",
             semester="1/2564",
-            year=2023,  # ระบุค่า year ที่จำเป็น
+            year=2023,
             seats=30,
             available_seats=10,
             available=True
@@ -97,12 +89,12 @@ class StudentURLsTest(TestCase):
     def test_dashboard_url(self):
         # ทดสอบการเข้าถึง URL ของ dashboard
         response = self.client.get(reverse('student_dashboard'))
-        self.assertEqual(response.status_code, 200)  # ตรวจสอบว่าได้ HTTP status code 200
+        self.assertEqual(response.status_code, 200)
     
     def test_request_quota_url(self):
         # ทดสอบการเข้าถึง URL ของ request_quota
         response = self.client.post(reverse('request_quota', args=[self.course.id]))
-        self.assertEqual(response.status_code, 302)  # ตรวจสอบว่า redirect หลังจากทำการขอ quota สำเร็จ
+        self.assertEqual(response.status_code, 302)
 
     def test_add_course_url(self):
         # ทดสอบการเข้าถึง URL ของ add_course
@@ -114,21 +106,20 @@ class StudentURLsTest(TestCase):
             'seats': 20,
             'available_seats': 20,
         })
-        self.assertEqual(response.status_code, 302)  # ตรวจสอบว่า redirect หลังจากเพิ่มหลักสูตรสำเร็จ
-        self.assertTrue(Course.objects.filter(name='New Course').exists())  # ตรวจสอบว่าหลักสูตรถูกสร้าง
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Course.objects.filter(name='New Course').exists())
 
-    def test_cancel_quota_url(self):
-        # ทดสอบการเข้าถึง URL ของ cancel_quota
-        response = self.client.post(reverse('cancel_enrollment', args=[self.quota_request.id]))
-        self.assertEqual(response.status_code, 302)  # ตรวจสอบว่า redirect หลังจากยกเลิกคำขอ
-        self.assertFalse(QuotaRequest.objects.filter(id=self.quota_request.id).exists())  # ตรวจสอบว่าคำขอถูกลบแล้ว
+    def test_cancel_request_url(self):
+        # ทดสอบการเข้าถึง URL ของ cancel_request
+        response = self.client.post(reverse('cancel_request', args=[self.quota_request.id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(QuotaRequest.objects.filter(id=self.quota_request.id).exists())
 
     def test_enroll_course_url(self):
         response = self.client.post(reverse('enroll_course', args=[self.course.id]))
-        self.assertEqual(response.status_code, 302)  # ตรวจสอบว่า redirect หลังจากลงทะเบียนสำเร็จ
-        # ตรวจสอบว่ามี QuotaRequest ที่มี status "Complete" เกิดขึ้น
+        self.assertEqual(response.status_code, 302)
         complete_requests = QuotaRequest.objects.filter(course=self.course, student=self.user, status="Complete").count()
-        self.assertEqual(complete_requests, 0)
+        self.assertEqual(complete_requests, 1)
 
 # ทดสอบโมเดลต่าง ๆ
 class StudentModelsTest(TestCase):
@@ -167,8 +158,8 @@ class StudentModelsTest(TestCase):
     def test_refund_seat(self):
         # ทดสอบการทำงานของ refund_seat method
         self.course.refund_seat()
-        self.course.refresh_from_db()  # อัพเดทข้อมูลจากฐานข้อมูล
-        self.assertEqual(self.course.available_seats, 11)  # ตรวจสอบว่า available_seats เพิ่มขึ้น 1
+        self.course.refresh_from_db()
+        self.assertEqual(self.course.available_seats, 11)
 
     def test_quota_request_creation(self):
         # ทดสอบว่า QuotaRequest ถูกสร้างถูกต้อง
